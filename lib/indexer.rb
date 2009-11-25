@@ -38,6 +38,7 @@ module Indexer
       end
       #puts "class name: #{class_name}"
       class_name.reflections.each_pair do |reflection_name, reflection_options|
+        yield( reflection_options ) and next if block_given?
         #puts "reflection => #{reflection_name}"
         case reflection_options.macro
         when :belongs_to
@@ -154,20 +155,24 @@ module Indexer
     end
     @missing_indexes = {}
     @indexes_required.each do |table_name, foreign_keys|
-
       unless foreign_keys.blank?
-        existing_indexes = ActiveRecord::Base.connection.indexes(table_name.to_sym).collect {|index| index.columns.size > 1 ? index.columns : index.columns.first}
-        keys_to_add = self.sortalize(foreign_keys.uniq) - self.sortalize(existing_indexes)
-        @missing_indexes[table_name] = keys_to_add unless keys_to_add.empty?
+        begin
+          existing_indexes = ActiveRecord::Base.connection.indexes(table_name.to_sym).collect {|index| index.columns.size > 1 ? index.columns : index.columns.first}
+          keys_to_add = self.sortalize(foreign_keys.uniq) - self.sortalize(existing_indexes)
+          @missing_indexes[table_name] = keys_to_add unless keys_to_add.empty?
+        rescue Exception => e
+        end
       end
     end
-    
+ 
     @indexes_required
   end
   
   def self.key_exists?(table,key_columns)     
     result = (key_columns.to_a - ActiveRecord::Base.connection.indexes(table).map { |i| i.columns }.flatten)
     result.empty?
+  rescue Exception => e
+    return false
   end
   
   def self.simple_migration
