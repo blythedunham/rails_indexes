@@ -21,6 +21,12 @@ Display a migration for adding/removing all necessary indexes based on associati
 Display a migration for adding/removing all necessary indexes based on AR::Base#find calls (including: find, find_by, find_all_by, find_by_x_and_y, find_all_by_x_and_y):
 <pre>rake db:show_me_ar_find_indexes</pre>
 
+Display a migration for adding/removing foreign keys. Foreigner plugin is required.
+<pre> rake db:indexes:foreign_keys </pre>
+
+Display a migration for removing duplicated indexes.
+<pre> rake db:indexes:duplicates </pre>
+
 Note that it would probably make more sense running those tasks on production, where you *actually* need those indexes to be added.
 
 * Add an option to create a migration that adds all the needed indexes.
@@ -29,8 +35,15 @@ Note that it would probably make more sense running those tasks on production, w
 h2. Tests
 
 Requires SQLite3 installed, then just:
-<pre>rake</pre>
+<pre>rake test</pre>
 to run the tests
+
+To run foreign key tests, speficy the adapter which supports foreign keys
+as an ENV param. When running SQLite3, foreign key tests are skipped.
+<pre>DB=mysql rake test</pre>
+
+A database named 'rails_indexes_test' must exist
+<pre> sudo mysqladmin create rails_indexes_test </pre>
 
 h4. Author:
 

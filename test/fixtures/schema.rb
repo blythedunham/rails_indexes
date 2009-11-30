@@ -43,4 +43,6 @@ ActiveRecord::Schema.define do
   create_table "countries", :force => true do |t|
     t.column "name", :string
   end
+  
+  begin; add_foreign_key :companies, :countries; rescue; end
 end

@@ -1,25 +1,58 @@
-require 'rubygems'
 
 require 'test/unit'
-
-require 'activerecord'
-require 'active_record/fixtures'
+require 'rubygems'
 require 'active_support'
 require 'active_support/test_case'
+require 'active_record'
+require 'active_record/test_case'
+require 'active_record/connection_adapters/mysql_adapter'
 require 'action_controller'
 
-require 'indexer'
+begin
+  require 'ruby-debug'
+rescue LoadError
+  puts "ruby-debug not loaded"
+end
 
-ActiveRecord::Base.establish_connection(
-  :adapter  => "sqlite3",
-  :database => ":memory:"
-)
+connection_params = if ENV['DB']
+  { :adapter => ENV['DB'], :database => 'rails_indexes_test' }
+else
+  { :adapter  => "sqlite3", :database => ":memory:" }
+end
+
+ActiveRecord::Base.establish_connection( connection_params )
+
+ActiveRecord::Base.logger = Logger.new("debug.log")
+
+begin
+  require 'foreigner'
+rescue LoadError
+  puts "foreigner not loaded"
+end
+
+silence_warnings {
+  ROOT       = File.join(File.dirname(__FILE__), '..')
+  RAILS_ROOT = ROOT
+}
+
+$LOAD_PATH << File.join(ROOT, 'lib')
+$LOAD_PATH << File.join(ROOT, 'lib', 'rails_indexes')
+
+require 'indexer'
+require 'foreign_key_indexer'
+require 'duplicate_detector'
 
 class Rails
   def self.root
     "test/fixtures/"
   end
+
+  def self.logger
+    ActiveRecord::Base.logger
+  end
 end
+
+ENV['RAILS_ENV'] ||= 'test'
 
 load 'test/fixtures/schema.rb'
 

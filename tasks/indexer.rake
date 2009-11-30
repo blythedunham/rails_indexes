@@ -15,4 +15,16 @@ namespace :db do
   task :show_me_a_migration => :environment do
     Indexer.simple_migration
   end
+
+  namespace :indexes do
+    desc "create foreign key indexes"
+    task :foreign_keys => :environment do
+      RailsIndexes::ForeignKeyIndexer.migration
+    end
+    desc "find redundant indexes"
+    task :duplicates => :environment do
+      RailsIndexes::DuplicateDetector.migration
+    end
+  end
+
 end
